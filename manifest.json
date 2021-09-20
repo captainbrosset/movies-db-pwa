@@ -1,0 +1,18 @@
+{
+    "lang": "en-us",
+    "name": "My Movie List PWA",
+    "short_name": "MyMovieList",
+    "description": "A sample PWA to maintain a list of movie you've seen",
+    "start_url": "/",
+    "scope": "/",
+    "display": "standalone",
+    "theme_color": "#2f3d58",
+    "background_color": "#2f3d58",
+    "orientation": "any",
+    "icons": [
+        {
+            "src": "favicon.svg",
+            "sizes": "72x72 96x96 128x128 256x256 512x512"
+        }
+    ]
+}
