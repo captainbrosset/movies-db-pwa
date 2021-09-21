@@ -1,6 +1,6 @@
 html, input {
   font-family: Georgia, 'Times New Roman', Times, serif;
-  font-size: 14pt;
+  font-size: 12pt;
   color: #193d04;
 }
 
@@ -50,7 +50,7 @@ header label {
 
 .movies {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 1rem;
 }
 
@@ -78,6 +78,10 @@ header label {
 
 .movie button {
 	place-self: end center;
+}
+
+main .movie .year {
+    display: none;
 }
 
 .error {
