@@ -100,6 +100,10 @@ async function getMovieDetails(id) {
 }
 
 function requestBackgroundSyncForSearchQuery(query) {
+    if (!self.registration.sync) {
+        return;
+    }
+
     // We're offline. register a Background Sync to do the query again later when online.
     self.registration.sync.register(BACKGROUND_SEARCH_QUERY_TAG);
     // Remember the search query so we can do it later.
@@ -107,6 +111,10 @@ function requestBackgroundSyncForSearchQuery(query) {
 }
 
 function requestBackgroundSyncForMovieDetails(id) {
+    if (!self.registration.sync) {
+        return;
+    }
+
     // We're offline. register a Background Sync to do the query again later when online.
     self.registration.sync.register(BACKGROUND_MOVIE_DETAILS_TAG);
     // Remember the id so we can do it later.
