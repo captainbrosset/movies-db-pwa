@@ -11,7 +11,6 @@
 </head>
 
 <body>
-
   <header>
     <h1><a href="/">My Movie List</a></h1>
     <label>
@@ -21,19 +20,38 @@
   </header>
 
   <main>
-    <!-- <ul class="movies"><li class="movie" data-imdb-id="tt1570728"><h2>Crazy, Stupid, Love.</h2><p class="year">Year: 2011</p><img src="https://m.media-amazon.com/images/M/MV5BMTg2MjkwMTM0NF5BMl5BanBnXkFtZTcwMzc4NDg2NQ@@._V1_SX300.jpg"><button class="more-info">More info</button><button class="add-to-list">Add</button></li><li class="movie" data-imdb-id="tt0057012"><h2>Dr. Strangelove or: How I Learned to Stop Worrying and Love the Bomb</h2><p class="year">Year: 1964</p><img src="https://m.media-amazon.com/images/M/MV5BZWI3ZTMxNjctMjdlNS00NmUwLWFiM2YtZDUyY2I3N2MxYTE0XkEyXkFqcGdeQXVyNzkwMjQ5NzM@._V1_SX300.jpg"><button class="more-info">More info</button><button class="add-to-list">Add</button></li><li class="movie" data-imdb-id="tt0314331"><h2>Love Actually</h2><p class="year">Year: 2003</p><img src="https://m.media-amazon.com/images/M/MV5BMTY4NjQ5NDc0Nl5BMl5BanBnXkFtZTYwNjk5NDM3._V1_SX300.jpg"><button class="more-info">More info</button><button class="add-to-list">Add</button></li><li class="movie" data-imdb-id="tt0138097"><h2>Shakespeare in Love</h2><p class="year">Year: 1998</p><img src="https://m.media-amazon.com/images/M/MV5BM2ZkNjM5MjEtNTBlMC00OTI5LTgyYmEtZDljMzNmNzhiNzY0XkEyXkFqcGdeQXVyNDYyMDk5MTU@._V1_SX300.jpg"><button class="more-info">More info</button><button class="add-to-list">Add</button></li><li class="movie" data-imdb-id="tt0431308"><h2>P.S. I Love You</h2><p class="year">Year: 2007</p><img src="https://m.media-amazon.com/images/M/MV5BNTg2MDg4MjI5NV5BMl5BanBnXkFtZTcwMzQ0MDczMw@@._V1_SX300.jpg"><button class="more-info">More info</button><button class="add-to-list">Add</button></li><li class="movie" data-imdb-id="tt1155056"><h2>I Love You, Man</h2><p class="year">Year: 2009</p><img src="https://m.media-amazon.com/images/M/MV5BMTU4MjI5NTEyNV5BMl5BanBnXkFtZTcwNjQ1NTMzMg@@._V1_SX300.jpg"><button class="more-info">More info</button><button class="add-to-list">Add</button></li><li class="movie" data-imdb-id="tt0758752"><h2>Love &amp; Other Drugs</h2><p class="year">Year: 2010</p><img src="https://m.media-amazon.com/images/M/MV5BMTgxOTczODEyMF5BMl5BanBnXkFtZTcwMDc0NDY4Mw@@._V1_SX300.jpg"><button class="more-info">More info</button><button class="add-to-list">Add</button></li><li class="movie" data-imdb-id="tt0272338"><h2>Punch-Drunk Love</h2><p class="year">Year: 2002</p><img src="https://m.media-amazon.com/images/M/MV5BYmE1OTY4NjgtYjcwNC00NWE4LWJiNGMtZmVhYTdlMWE1YzIxXkEyXkFqcGdeQXVyMTMxODk2OTU@._V1_SX300.jpg"><button class="more-info">More info</button><button class="add-to-list">Add</button></li><li class="movie" data-imdb-id="tt1638002"><h2>Love, Rosie</h2><p class="year">Year: 2014</p><img src="https://m.media-amazon.com/images/M/MV5BMTk0Mzg1MTU1MF5BMl5BanBnXkFtZTgwMjU3ODI2MzE@._V1_SX300.jpg"><button class="more-info">More info</button><button class="add-to-list">Add</button></li><li class="movie" data-imdb-id="tt0057076"><h2>From Russia with Love</h2><p class="year">Year: 1963</p><img src="https://m.media-amazon.com/images/M/MV5BZjBiNGNlNmItZTk2Zi00YjRlLTk1NzEtNDI2YTNmN2EwNDhlXkEyXkFqcGdeQXVyNDY2MTk1ODk@._V1_SX300.jpg"><button class="more-info">More info</button><button class="add-to-list">Add</button></li></ul> -->
     <ul class="movies">Search movies to start adding them to your list</ul>
+    <div class="error">
+      <h2>Offline error</h2>
+      <p>You appear to be offline, so we couldn't get movies. We will try automatically later when you come back online and display the results next time you open the app.</p>
+      <p class="grant-permission">If you allow permissions, we can even let you know when the results are ready <button class="permission">Allow permissions</button></p>
+    </div>
   </main>
 
   <aside>
-      <button class="close">Close</button>
-      <div class="movie"></div>
+    <button class="close">Close</button>
+    <div class="movie"></div>
+    <div class="error">
+      <h2>Offline error</h2>
+      <p>You appear to be offline, so we couldn't retrieve the movie details. We will try automatically later when you come back online and display the details next time you open the app.</p>
+      <p class="grant-permission">If you allow permissions, we can even let you know when the results are ready <button class="permission">Allow permissions</button></p>
+    </div>
   </aside>
 
   <script>
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('sw.js', {
         scope: '/'
+      }).then(reg => {
+        if (reg.installing) {
+          console.log('Service worker installing');
+        } else if (reg.waiting) {
+          console.log('Service worker installed');
+        } else if (reg.active) {
+          console.log('Service worker active');
+        }
+      }).catch(e => {
+        console.log('Registration failed with ' + e);
       });
     }
   </script>

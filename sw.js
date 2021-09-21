@@ -1,5 +1,181 @@
 "use strict";
 
+self.importScripts('/localforage-1.10.0.min.js');
 
+const BACKGROUND_SEARCH_QUERY_TAG = 'background-search-query';
+const NEXT_LAUNCH_QUERY_RESULTS_TAG = 'next-launch-query-results';
+const BACKGROUND_MOVIE_DETAILS_TAG = 'background-movie-details';
+const NEXT_LAUNCH_MOVIE_DETAILS_TAG = 'next-launch-movie-details';
 
-{"Title":"Star Wars: Episode IX - The Rise of Skywalker","Year":"2019","Rated":"PG-13","Released":"20 Dec 2019","Runtime":"141 min","Genre":"Action, Adventure, Fantasy","Director":"J.J. Abrams","Writer":"Chris Terrio, J.J. Abrams, Derek Connolly","Actors":"Daisy Ridley, John Boyega, Oscar Isaac","Plot":"While the First Order continues to ravage the galaxy, Rey finalizes her training as a Jedi. But danger suddenly rises from the ashes as the evil Emperor Palpatine mysteriously returns from the dead. While working with Finn and Poe Dameron to fulfill a new mission, Rey will not only face Kylo Ren once more, but she will also finally discover the truth about her parents as well as a deadly secret that could determine her future and the fate of the ultimate final showdown that is to come.","Language":"English","Country":"United States","Awards":"Nominated for 3 Oscars. 11 wins & 59 nominations total","Poster":"https://m.media-amazon.com/images/M/MV5BMDljNTQ5ODItZmQwMy00M2ExLTljOTQtZTVjNGE2NTg0NGIxXkEyXkFqcGdeQXVyODkzNTgxMDg@._V1_SX300.jpg","Ratings":[{"Source":"Internet Movie Database","Value":"6.6/10"},{"Source":"Rotten Tomatoes","Value":"52%"},{"Source":"Metacritic","Value":"53/100"}],"Metascore":"53","imdbRating":"6.6","imdbVotes":"401,586","imdbID":"tt2527338","Type":"movie","DVD":"20 Dec 2019","BoxOffice":"$515,202,542","Production":"Bad Robot, Lucasfilm Ltd.","Website":"N/A","Response":"True"}
+const OMDB_API_KEY = 'd1693e4b';
+
+const CACHE_NAME = 'my-movie-list-v1';
+
+const INITIAL_CACHED_RESOURCES = [
+    '/',
+    '/index.html',
+    '/style.css',
+    '/favicon.svg',
+    '/missing-image.jpg',
+    '/script.js',
+    '/localforage-1.10.0.min.js',
+    '/offline-request-response.json',
+];
+
+self.addEventListener('install', event => {
+    event.waitUntil((async () => {
+        const cache = await caches.open(CACHE_NAME);
+        cache.addAll(INITIAL_CACHED_RESOURCES);
+    })());
+});
+
+self.addEventListener('activate', function (event) {
+    console.log('Claiming control');
+    return self.clients.claim();
+});
+
+// If it's an image for a movie, do a cache-first approach.
+self.addEventListener('fetch', event => {
+    if (event.request.url.endsWith('.jpg')) {
+        event.respondWith((async () => {
+            const cache = await caches.open(CACHE_NAME);
+            const cachedResponse = await cache.match(event.request);
+            if (cachedResponse !== undefined) {
+                return cachedResponse;
+            } else {
+                try {
+                    const fetchResponse = await fetch(event.request);
+                    cache.put(event.request, fetchResponse.clone());
+                    return fetchResponse;
+                } catch (e) {
+                    return await cache.match('/missing-image.jpg');
+                }
+            }
+        })());
+    }
+});
+
+async function searchForMovies(query) {
+    let error = false;
+    let response = null;
+
+    try {
+        response = await fetch(`http://www.omdbapi.com/?apikey=${OMDB_API_KEY}&s=${query}`);
+        if (response.status !== 200) {
+            error = true;
+        }
+    } catch (e) {
+        error = true;
+    }
+
+    if (error) {
+        requestBackgroundSyncForSearchQuery(query);
+        const cache = await caches.open(CACHE_NAME);
+        response = await cache.match('/offline-request-response.json');
+    }
+
+    return response;
+}
+
+async function getMovieDetails(id) {
+    let error = false;
+    let response = null;
+
+    try {
+        response = await fetch(`http://www.omdbapi.com/?apikey=${OMDB_API_KEY}&i=${id}`);
+        if (response.status !== 200) {
+            error = true;
+        }
+    } catch (e) {
+        error = true;
+    }
+
+    if (error) {
+        requestBackgroundSyncForMovieDetails(id);
+        const cache = await caches.open(CACHE_NAME);
+        response = await cache.match('/offline-request-response.json');
+    }
+
+    return response;
+}
+
+function requestBackgroundSyncForSearchQuery(query) {
+    // We're offline. register a Background Sync to do the query again later when online.
+    self.registration.sync.register(BACKGROUND_SEARCH_QUERY_TAG);
+    // Remember the search query so we can do it later.
+    localforage.setItem(BACKGROUND_SEARCH_QUERY_TAG, query);
+}
+
+function requestBackgroundSyncForMovieDetails(id) {
+    // We're offline. register a Background Sync to do the query again later when online.
+    self.registration.sync.register(BACKGROUND_MOVIE_DETAILS_TAG);
+    // Remember the id so we can do it later.
+    localforage.setItem(BACKGROUND_MOVIE_DETAILS_TAG, id);
+}
+
+self.addEventListener('fetch', event => {
+    const url = new URL(event.request.url);
+    const query = url.searchParams.get('s');
+    const id = url.searchParams.get('i');
+
+    if (url.pathname === '/search' && query) {
+        event.respondWith(searchForMovies(query));
+    }
+
+    if (url.pathname === '/details' && id) {
+        event.respondWith(getMovieDetails(id));
+    }
+});
+
+// Network is back up, we're being awaken, let's do the requests we were trying to do before if any.
+self.addEventListener('sync', event => {
+    // Check if we had a movie search query to do.
+    if (event.tag === BACKGROUND_SEARCH_QUERY_TAG) {
+        event.waitUntil((async () => {
+            // Get the query we were trying to do before.
+            const query = await localforage.getItem(BACKGROUND_SEARCH_QUERY_TAG);
+            if (!query) {
+                return;
+            }
+            await localforage.removeItem(BACKGROUND_SEARCH_QUERY_TAG);
+
+            const response = await searchForMovies(query);
+            const data = await response.json();
+
+            // Store the results for the next time the user opens the app. The frontend will use it to
+            // populate the page.
+            await localforage.setItem(NEXT_LAUNCH_QUERY_RESULTS_TAG, data.Search);
+
+            // Let the user know, if they granted permissions before.
+            self.registration.showNotification(`Your search for "${query}" is now ready`, {
+                icon: "/favicon.svg",
+                body: "Launch the app"
+            });
+        })());
+    }
+
+    // Check if we had a movie details request to do.
+    if (event.tag === BACKGROUND_MOVIE_DETAILS_TAG) {
+        event.waitUntil((async () => {
+            // Get the id we were trying to get details about before.
+            const id = await localforage.getItem(BACKGROUND_MOVIE_DETAILS_TAG);
+            if (!id) {
+                return;
+            }
+            await localforage.removeItem(BACKGROUND_MOVIE_DETAILS_TAG);
+
+            const response = await getMovieDetails(id);
+            const data = await response.json();
+
+            // Store the results for the next time the user opens the app. The frontend will use it to
+            // populate the details section.
+            await localforage.setItem(NEXT_LAUNCH_MOVIE_DETAILS_TAG, data);
+
+            // Let the user know, if they granted permissions before.
+            self.registration.showNotification(`Movie details are now ready`, {
+                icon: "/favicon.svg",
+                body: "Launch the app"
+            });
+        })());
+    }
+});
