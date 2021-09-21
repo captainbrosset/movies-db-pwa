@@ -163,7 +163,7 @@ function showMyList() {
     prepareMovieList();
 
     localforage.iterate(movie => {
-        if (movie.Title) {
+        if (movie && movie.Title) {
             const li = createShortMovieItem(movie);
             moviesContainer.appendChild(li);
         }
