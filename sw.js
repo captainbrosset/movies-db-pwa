@@ -55,12 +55,12 @@ self.addEventListener('fetch', event => {
     }
 });
 
-async function searchForMovies(query) {
+async function searchForMovies(query, dontTryLater) {
     let error = false;
     let response = null;
 
     try {
-        response = await fetch(`http://www.omdbapi.com/?apikey=${OMDB_API_KEY}&s=${query}`);
+        response = await fetch(`https://www.omdbapi.com/?apikey=${OMDB_API_KEY}&s=${query}`);
         if (response.status !== 200) {
             error = true;
         }
@@ -68,7 +68,7 @@ async function searchForMovies(query) {
         error = true;
     }
 
-    if (error) {
+    if (error && !dontTryLater) {
         requestBackgroundSyncForSearchQuery(query);
         const cache = await caches.open(CACHE_NAME);
         response = await cache.match('/offline-request-response.json');
@@ -77,12 +77,12 @@ async function searchForMovies(query) {
     return response;
 }
 
-async function getMovieDetails(id) {
+async function getMovieDetails(id, dontTryLater) {
     let error = false;
     let response = null;
 
     try {
-        response = await fetch(`http://www.omdbapi.com/?apikey=${OMDB_API_KEY}&i=${id}`);
+        response = await fetch(`https://www.omdbapi.com/?apikey=${OMDB_API_KEY}&i=${id}`);
         if (response.status !== 200) {
             error = true;
         }
@@ -90,7 +90,7 @@ async function getMovieDetails(id) {
         error = true;
     }
 
-    if (error) {
+    if (error && !dontTryLater) {
         requestBackgroundSyncForMovieDetails(id);
         const cache = await caches.open(CACHE_NAME);
         response = await cache.match('/offline-request-response.json');
@@ -147,7 +147,7 @@ self.addEventListener('sync', event => {
             }
             await localforage.removeItem(BACKGROUND_SEARCH_QUERY_TAG);
 
-            const response = await searchForMovies(query);
+            const response = await searchForMovies(query, true);
             const data = await response.json();
 
             // Store the results for the next time the user opens the app. The frontend will use it to
@@ -172,7 +172,7 @@ self.addEventListener('sync', event => {
             }
             await localforage.removeItem(BACKGROUND_MOVIE_DETAILS_TAG);
 
-            const response = await getMovieDetails(id);
+            const response = await getMovieDetails(id, true);
             const data = await response.json();
 
             // Store the results for the next time the user opens the app. The frontend will use it to
