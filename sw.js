@@ -156,8 +156,14 @@ self.addEventListener('sync', event => {
 
             // Let the user know, if they granted permissions before.
             self.registration.showNotification(`Your search for "${query}" is now ready`, {
-                icon: "/favicon.svg",
-                body: "Launch the app"
+                icon: '/favicon.svg',
+                body: 'You can access the list of movies in the app',
+                actions: [
+                    {
+                        action: 'view-results',
+                        title: 'Open app'
+                    }
+                ]
             });
         })());
     }
@@ -182,7 +188,13 @@ self.addEventListener('sync', event => {
             // Let the user know, if they granted permissions before.
             self.registration.showNotification(`Movie details are now ready`, {
                 icon: "/favicon.svg",
-                body: "Launch the app"
+                body: "You can access the details in the app",
+                actions: [
+                    {
+                        action: 'view-details',
+                        title: 'Open app'
+                    }
+                ]
             });
         })());
     }
