@@ -7,7 +7,7 @@ const NEXT_LAUNCH_QUERY_RESULTS_TAG = 'next-launch-query-results';
 const BACKGROUND_MOVIE_DETAILS_TAG = 'background-movie-details';
 const NEXT_LAUNCH_MOVIE_DETAILS_TAG = 'next-launch-movie-details';
 
-const CACHE_NAME = 'my-movie-list-v2';
+const CACHE_NAME = 'my-movie-list-v3';
 
 const INITIAL_CACHED_RESOURCES = [
     '/',
@@ -30,27 +30,6 @@ self.addEventListener('install', event => {
 self.addEventListener('activate', function (event) {
     console.log('Claiming control');
     return self.clients.claim();
-});
-
-// If it's an image for a movie, do a cache-first approach.
-self.addEventListener('fetch', event => {
-    if (event.request.url.endsWith('.jpg')) {
-        event.respondWith((async () => {
-            const cache = await caches.open(CACHE_NAME);
-            const cachedResponse = await cache.match(event.request);
-            if (cachedResponse !== undefined) {
-                return cachedResponse;
-            } else {
-                try {
-                    const fetchResponse = await fetch(event.request);
-                    cache.put(event.request, fetchResponse.clone());
-                    return fetchResponse;
-                } catch (e) {
-                    return await cache.match('/missing-image.jpg');
-                }
-            }
-        })());
-    }
 });
 
 async function searchForMovies(query, dontTryLater) {

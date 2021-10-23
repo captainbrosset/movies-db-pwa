@@ -211,7 +211,7 @@ searchField.addEventListener('keyup', debounce(async function () {
         displayMovieListOfflineError();
         return [];
     } else {
-        showSearchResults(data.Search);
+        showSearchResults(data);
     }
 }, 500));
 
