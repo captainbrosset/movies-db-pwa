@@ -7,9 +7,7 @@ const NEXT_LAUNCH_QUERY_RESULTS_TAG = 'next-launch-query-results';
 const BACKGROUND_MOVIE_DETAILS_TAG = 'background-movie-details';
 const NEXT_LAUNCH_MOVIE_DETAILS_TAG = 'next-launch-movie-details';
 
-const OMDB_API_KEY = 'd1693e4b';
-
-const CACHE_NAME = 'my-movie-list-v1';
+const CACHE_NAME = 'my-movie-list-v2';
 
 const INITIAL_CACHED_RESOURCES = [
     '/',
@@ -60,7 +58,7 @@ async function searchForMovies(query, dontTryLater) {
     let response = null;
 
     try {
-        response = await fetch(`https://www.omdbapi.com/?apikey=${OMDB_API_KEY}&s=${query}`);
+        response = await fetch(`https://neighborly-airy-agate.glitch.me/api/movies/${query}`);
         if (response.status !== 200) {
             error = true;
         }
@@ -82,7 +80,7 @@ async function getMovieDetails(id, dontTryLater) {
     let response = null;
 
     try {
-        response = await fetch(`https://www.omdbapi.com/?apikey=${OMDB_API_KEY}&i=${id}`);
+        response = await fetch(`https://neighborly-airy-agate.glitch.me/api/movie/${id}`);
         if (response.status !== 200) {
             error = true;
         }

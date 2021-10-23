@@ -60,20 +60,20 @@ function toggleNotificationPermissionMessage() {
 function createShortMovieItem(movie) {
     const el = document.createElement('li');
     el.classList.add('movie');
-    el.dataset.imdbId = movie.imdbID;
+    el.dataset.id = movie.id;
 
     const title = document.createElement('h2');
-    title.title = movie.Title;
-    title.textContent = movie.Title;
+    title.title = movie.name;
+    title.textContent = movie.name;
     el.appendChild(title);
 
     const year = document.createElement('p');
     year.classList.add('year');
-    year.textContent = `Year: ${movie.Year}`;
+    year.textContent = `Year: ${movie.date}`;
     el.appendChild(year);
 
     const poster = document.createElement('img');
-    poster.src = movie.Poster;
+    poster.src = movie.poster;
     el.appendChild(poster);
 
     const moreInfoBtn = document.createElement('button');
@@ -84,7 +84,7 @@ function createShortMovieItem(movie) {
     const addToListBtn = document.createElement('button');
     addToListBtn.classList.add('add-to-list');
     el.appendChild(addToListBtn);
-    updateAddToListButtonState(addToListBtn, movie.imdbID);
+    updateAddToListButtonState(addToListBtn, movie.id);
 
     return el;
 }
@@ -103,24 +103,19 @@ function createFullMovieItem(movie) {
     el.querySelector('.more-info').remove();
     el.querySelector('.add-to-list').remove();
 
-    const genre = document.createElement('p');
-    genre.classList.add('genre');
-    genre.textContent = `Genre: ${movie.Genre}`;
-    el.appendChild(genre);
-
     const director = document.createElement('p');
     director.classList.add('director');
-    director.textContent = `Director: ${movie.Director}`;
+    director.textContent = `Director: ${movie.director}`;
     el.appendChild(director);
 
     const actors = document.createElement('p');
     actors.classList.add('actors');
-    actors.textContent = `Actors: ${movie.Actors}`;
+    actors.textContent = `Actors: ${movie.actors}`;
     el.appendChild(actors);
 
     const plot = document.createElement('p');
     plot.classList.add('plot');
-    plot.textContent = `${movie.Plot}`;
+    plot.textContent = `${movie.description}`;
     el.appendChild(plot);
 
     return el;
@@ -163,7 +158,7 @@ function showMyList() {
     prepareMovieList();
 
     localforage.iterate(movie => {
-        if (movie && movie.Title) {
+        if (movie && movie.name) {
             const li = createShortMovieItem(movie);
             moviesContainer.appendChild(li);
         }
@@ -230,7 +225,7 @@ addEventListener('click', async e => {
         return;
     }
 
-    const id = btn.closest('.movie').dataset.imdbId;
+    const id = btn.closest('.movie').dataset.id;
     const data = await getMovieDetails(id);
 
     showDetailsSidebar(data);
@@ -242,7 +237,7 @@ addEventListener('click', async e => {
         return;
     }
 
-    const id = btn.closest('.movie').dataset.imdbId;
+    const id = btn.closest('.movie').dataset.id;
 
     const stored = await localforage.getItem(id);
     if (!stored) {
